@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NexShop - Admin Inventory Control</title>
+    <title>NexShop - Persistent Admin Console</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .hybrid-grid { column-count: 1; column-gap: 20px; }
@@ -15,20 +15,20 @@
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen overflow-hidden" id="page-body">
 
-    <!-- PLATFORM SECURITY LOCK OVERLAY -->
+    <!-- SECURITY LOCK OVERLAY -->
     <div id="auth-overlay" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-[100] flex items-center justify-center p-4 transition-all duration-700">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-8 rounded-2xl shadow-2xl relative text-center">
-            <div class="font-black text-3xl text-white mb-6">Nex<span class="text-blue-500">Shop</span> Admin</div>
+            <div class="font-black text-3xl text-white mb-6">Nex<span class="text-blue-500">Shop</span> Database</div>
             <button id="bypass-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg">
-                Unlock Catalog Console &rarr;
+                Access Persistent Hub &rarr;
             </button>
         </div>
     </div>
 
-    <!-- GLOBAL APPLICATION SPACE -->
+    <!-- MAIN INTERFACE LAYER -->
     <div id="app-content" class="filter blur-md pointer-events-none transition-all duration-700 h-screen overflow-y-auto">
         
-        <!-- Interactive Sticky Header -->
+        <!-- Interactive Header -->
         <nav class="flex items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
             <div class="font-black text-2xl tracking-tight text-white">Nex<span class="text-blue-500">Shop</span></div>
             <div class="flex items-center space-x-4">
@@ -42,7 +42,7 @@
             </div>
         </nav>
 
-        <!-- MERCHANT PRODUCT CREATION MODAL CONTAINER -->
+        <!-- PRODUCT CREATION MODAL CONTAINER -->
         <div id="merchant-panel" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative">
                 <div class="flex justify-between items-center mb-4">
@@ -52,20 +52,20 @@
                     <button id="close-panel-btn" class="text-slate-500 hover:text-slate-300 font-bold text-sm">Cancel</button>
                 </div>
 
-                <!-- Input Entry Control Elements -->
+                <!-- Input Entry Forms -->
                 <form id="injector-form" class="space-y-4" onsubmit="return false;">
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Product Title</label>
-                        <input type="text" id="prod-title" required placeholder="e.g., Designer Leather Sneakers" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-blue-500 transition">
+                        <input type="text" id="prod-title" required placeholder="e.g., Ultra-Wide Curved Monitor" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-blue-500 transition">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Price ($)</label>
-                            <input type="number" step="0.01" id="prod-price" required placeholder="149.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-blue-500 transition">
+                            <input type="number" step="0.01" id="prod-price" required placeholder="399.99" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-blue-500 transition">
                         </div>
                         <div>
                             <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Category Tag</label>
-                            <input type="text" id="prod-tag" required placeholder="e.g., Fashion" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-blue-500 transition">
+                            <input type="text" id="prod-tag" required placeholder="e.g., Tech" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-blue-500 transition">
                         </div>
                     </div>
                     <div>
@@ -83,13 +83,13 @@
             </div>
         </div>
 
-        <!-- MASONRY PRESENTATION HUB -->
+        <!-- MASONRY PRESENTATION GRID -->
         <main class="max-w-[1400px] mx-auto px-6 py-8">
             <div class="hybrid-grid" id="item-container"></div>
         </main>
     </div>
 
-    <!-- PLATFORM ARCHITECTURE CONTROLLER MODULES -->
+    <!-- STORAGE & LAYOUT MOTORS -->
     <script>
         const bypassBtn = document.getElementById('bypass-btn');
         const authOverlay = document.getElementById('auth-overlay');
@@ -104,160 +104,202 @@
         const injectorForm = document.getElementById('injector-form');
 
         let totalCartCount = 0;
-        let objectIndex = 1;
+        let productsArray = [];
 
-        // Sign In Transition Locks
+        // Unlock Landing Sequence
         bypassBtn.addEventListener('click', function() {
             appContent.classList.remove('blur-md', 'pointer-events-none');
             authOverlay.classList.add('opacity-0', 'pointer-events-none');
             pageBody.classList.remove('overflow-hidden');
         });
 
-        // Toggle Control Panels
+        // Toggle Modal Interface panels
         openPanelBtn.addEventListener('click', () => merchantPanel.classList.remove('hidden'));
         closePanelBtn.addEventListener('click', () => merchantPanel.classList.add('hidden'));
 
-        // COMPONENT DESIGN STRUCTURING CORE ENGINE
-        function buildCardElement(title, price, tag, imageUrl, targetUrl) {
-            const card = document.createElement('div');
-            card.className = 'grid-item bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl flex flex-col transition duration-200 hover:border-slate-700 relative group';
-            
-            const imgPath = imageUrl ? imageUrl : `https://picsum.photos/400/${[280, 340, 400, 460][objectIndex % 4]}?random=${objectIndex}`;
-            let itemLikes = Math.floor(Math.random() * 50) + 2;
-
-            card.innerHTML = `
-                <!-- ADMIN DELETION PIPELINE TRIGGER -->
-                <button class="delete-product-btn absolute top-3 right-3 z-30 bg-red-600/90 hover:bg-red-500 text-white p-2 rounded-xl transition duration-150 opacity-0 group-hover:opacity-100 shadow-md transform hover:scale-105" title="Remove Product">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                </button>
-
-                <!-- Pinterest Image Presentation Component -->
-                <div class="product-link-trigger relative overflow-hidden cursor-pointer">
-                    <img src="${imgPath}" class="w-full object-cover max-h-[500px]">
-                    <span class="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md text-[10px] text-slate-400 font-bold px-2.5 py-1 rounded-full uppercase border border-slate-800">${tag}</span>
-                    <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition duration-200 flex items-center justify-center">
-                        <span class="bg-blue-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-lg">Go to Store &nearr;</span>
-                    </div>
-                </div>
-
-                <!-- Amazon Billing Segment -->
-                <div class="p-4 border-b border-slate-800/60 bg-slate-900/40">
-                    <h3 class="product-link-trigger font-bold text-white text-base hover:text-blue-400 cursor-pointer transition leading-snug">${title}</h3>
-                    <div class="flex items-center justify-between mt-4">
-                        <div class="text-xl font-black text-white">$${parseFloat(price).toFixed(2)}</div>
-                        <button class="add-to-cart-btn bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-black px-3.5 py-2 rounded-xl transition">
-                            Add to Cart
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Facebook Conversational Framework Layer -->
-                <div class="p-4 bg-slate-900/90 flex flex-col space-y-3">
-                    <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800/40 pb-2.5">
-                        <button class="like-btn font-bold hover:text-blue-400 transition">Like</button>
-                        <span class="font-medium text-slate-500"><span class="like-count text-slate-300 font-bold">${itemLikes}</span> clicks</span>
-                    </div>
-                    <div class="comments-box space-y-1.5 text-xs max-h-[80px] overflow-y-auto">
-                        <div class="text-slate-500"><strong class="text-slate-400">Inventory Status:</strong> Active Node</div>
-                    </div>
-                    <input type="text" placeholder="Write a comment..." class="comment-input w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 outline-none">
-                </div>
-            `;
-
-            // WIRE INTERNAL DELETION ENGINE MODULATOR
-            const deleteBtn = card.querySelector('.delete-product-btn');
-            deleteBtn.addEventListener('click', (e) => {
-                // Prevent routing events from misfiring during button interaction actions
-                e.stopPropagation(); 
-                
-                // Add a swift exit collapse transition animation block
-                card.style.transform = 'scale(0.9)';
-                card.style.opacity = '0';
-                card.style.transition = 'all 0.2s ease';
-                
-                setTimeout(() => {
-                    card.remove();
-                }, 200);
-            });
-
-            // Target redirect link handlers
-            const redirectTriggers = card.querySelectorAll('.product-link-trigger');
-            redirectTriggers.forEach(trigger => {
-                trigger.addEventListener('click', () => {
-                    window.open(targetUrl, '_blank');
-                });
-            });
-
-            // Shopping cart trigger logic
-            card.querySelector('.add-to-cart-btn').addEventListener('click', () => {
-                totalCartCount++;
-                cartCounter.innerText = totalCartCount;
-            });
-
-            // Facebook like toggle engine
-            const likeBtn = card.querySelector('.like-btn');
-            const likeCountDisplay = card.querySelector('.like-count');
-            let isLiked = false;
-            likeBtn.addEventListener('click', () => {
-                if(!isLiked) { itemLikes++; likeBtn.classList.add('text-blue-500'); isLiked = true; } 
-                else { itemLikes--; likeBtn.classList.remove('text-blue-500'); isLiked = false; }
-                likeCountDisplay.innerText = itemLikes;
-            });
-
-            // Live comment string parsing injector
-            const commentInput = card.querySelector('.comment-input');
-            const commentsBox = card.querySelector('.comments-box');
-            commentInput.addEventListener('keydown', (e) => {
-                if(e.key === 'Enter' && commentInput.value.trim() !== "") {
-                    const div = document.createElement('div');
-                    div.className = 'text-slate-400';
-                    div.innerHTML = `<strong class="text-slate-300">You</strong> ${commentInput.value.trim()}`;
-                    commentsBox.appendChild(div);
-                    commentInput.value = "";
-                }
-            });
-
-            objectIndex++;
-            return card;
+        // CORE SYNCHRONIZER: Writes the array to local disk memory
+        function saveCatalogToDisk() {
+            localStorage.setItem('nexshop_saved_catalog', JSON.stringify(productsArray));
         }
 
-        // CAPTURE NEW CONTROL SUBMISSIONS VIA DIALOG ACTION LOOPS
+        // COMPONENT MOUNT ENGINE
+        function renderStorefrontGrid() {
+            grid.innerHTML = ''; // Wipe display clean before mapping updated states
+            
+            productsArray.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = 'grid-item bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl flex flex-col transition duration-200 hover:border-slate-700 relative group';
+                
+                card.innerHTML = `
+                    <!-- HOVER ABSOLUTE REMOVAL TRIGGER -->
+                    <button class="delete-product-btn absolute top-3 right-3 z-30 bg-red-600/90 hover:bg-red-500 text-white p-2 rounded-xl transition duration-150 opacity-0 group-hover:opacity-100 shadow-md transform hover:scale-105" title="Remove Product">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+
+                    <!-- Imagery Block Routing Handle -->
+                    <div class="product-link-trigger relative overflow-hidden cursor-pointer">
+                        <img src="${item.imageUrl}" class="w-full object-cover max-h-[500px]">
+                        <span class="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md text-[10px] text-slate-400 font-bold px-2.5 py-1 rounded-full uppercase border border-slate-800">${item.tag}</span>
+                        <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition duration-200 flex items-center justify-center">
+                            <span class="bg-blue-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-lg">Go to Store &nearr;</span>
+                        </div>
+                    </div>
+
+                    <!-- Commercial Price Data Block -->
+                    <div class="p-4 border-b border-slate-800/60 bg-slate-900/40">
+                        <h3 class="product-link-trigger font-bold text-white text-base hover:text-blue-400 cursor-pointer transition leading-snug">${item.title}</h3>
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="text-xl font-black text-white">$${parseFloat(item.price).toFixed(2)}</div>
+                            <button class="add-to-cart-btn bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-black px-3.5 py-2 rounded-xl transition">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Commments Social Stack -->
+                    <div class="p-4 bg-slate-900/90 flex flex-col space-y-3">
+                        <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800/40 pb-2.5">
+                            <button class="like-btn font-bold hover:text-blue-400 transition">Like</button>
+                            <span class="font-medium text-slate-500"><span class="like-count text-slate-300 font-bold">${item.likes}</span> clicks</span>
+                        </div>
+                        <div class="comments-box space-y-1.5 text-xs max-h-[80px] overflow-y-auto">
+                            <div class="text-slate-500"><strong class="text-slate-400">Database Status:</strong> Locked Sync</div>
+                        </div>
+                        <input type="text" placeholder="Write a comment..." class="comment-input w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 outline-none">
+                    </div>
+                `;
+
+                // WIRE PERSISTENT DELETION ROUTER HANDLES
+                card.querySelector('.delete-product-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    card.style.transform = 'scale(0.95)';
+                    card.style.opacity = '0';
+                    card.style.transition = 'all 0.15s ease';
+                    
+                    setTimeout(() => {
+                        // Filter out this unique product instance out from our global data state storage array
+                        productsArray = productsArray.filter(p => p.id !== item.id);
+                        saveCatalogToDisk();
+                        renderStorefrontGrid();
+                    }, 150);
+                });
+
+                // Target URL Redirect Triggers
+                card.querySelectorAll('.product-link-trigger').forEach(trigger => {
+                    trigger.addEventListener('click', () => {
+                        window.open(item.targetUrl, '_blank');
+                    });
+                });
+
+                // Incremental Shopping Counter
+                card.querySelector('.add-to-cart-btn').addEventListener('click', () => {
+                    totalCartCount++;
+                    cartCounter.innerText = totalCartCount;
+                });
+
+                // Stateful Like Counter Toggle Tweak Engine
+                const likeBtn = card.querySelector('.like-btn');
+                const likeCountDisplay = card.querySelector('.like-count');
+                let isLiked = false;
+                likeBtn.addEventListener('click', () => {
+                    if(!isLiked) { item.likes++; likeBtn.classList.add('text-blue-500'); isLiked = true; } 
+                    else { item.likes--; likeBtn.classList.remove('text-blue-500'); isLiked = false; }
+                    likeCountDisplay.innerText = item.likes;
+                    saveCatalogToDisk(); // Update likes state values directly to storage
+                });
+
+                // Live dynamic comment submission strings
+                const commentInput = card.querySelector('.comment-input');
+                const commentsBox = card.querySelector('.comments-box');
+                commentInput.addEventListener('keydown', (e) => {
+                    if(e.key === 'Enter' && commentInput.value.trim() !== "") {
+                        const div = document.createElement('div');
+                        div.className = 'text-slate-400';
+                        div.innerHTML = `<strong class="text-slate-300">You</strong> ${commentInput.value.trim()}`;
+                        commentsBox.appendChild(div);
+                        commentInput.value = "";
+                    }
+                });
+
+                grid.appendChild(card);
+            });
+        }
+
+        // CAPTURE NEW INJECTED FORMS ELEMENTS
         injectorForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
             const title = document.getElementById('prod-title').value;
             const price = document.getElementById('prod-price').value;
             const tag = document.getElementById('prod-tag').value;
-            const img = document.getElementById('prod-img').value;
-            const url = document.getElementById('prod-url').value;
+            const imgInput = document.getElementById('prod-img').value;
+            const targetUrl = document.getElementById('prod-url').value;
 
-            const newCard = buildCardElement(title, price, tag, img, url);
-            grid.insertBefore(newCard, grid.firstChild);
+            // Generate clean auto fallback stock asset images if input is empty
+            const uniqueRandomKey = Math.floor(Math.random() * 1000);
+            const heightSet = [280, 340, 400, 460][uniqueRandomKey % 4];
+            const imageUrl = imgInput ? imgInput : `https://picsum.photos/400/${heightSet}?random=${uniqueRandomKey}`;
+
+            // Build structural object item literal maps
+            const newProductObj = {
+                id: Date.now().toString() + Math.random().toString(36).substr(2, 5), // Completely unique identifier node key strings
+                title: title,
+                price: price,
+                tag: tag,
+                imageUrl: imageUrl,
+                targetUrl: targetUrl,
+                likes: Math.floor(Math.random() * 40) + 2
+            };
+
+            // Unshift places new components right up front at the top of the feed grid
+            productsArray.unshift(newProductObj);
+            
+            saveCatalogToDisk();
+            renderStorefrontGrid();
 
             injectorForm.reset();
             merchantPanel.classList.add('hidden');
         });
 
-        // Initialize Storefront catalog with editable baseline stock array data templates
-        const defaultStockData = [
-            { title: "Cyberpunk Mechanical Keyboard", price: "124.99", tag: "Tech" },
-            { title: "Minimalist Leather Backpack", price: "89.50", tag: "Style" },
-            { title: "Smart Ergonomic Task Chair", price: "299.00", tag: "Office" },
-            { title: "Single-Origin Coffee Beans", price: "19.95", tag: "Food" }
-        ];
+        // RECOVERY ROUTINE ENGINE: Pulls old disk saves or boots basic defaults if storage is clean
+        function initializePersistentStorefront() {
+            const savedData = localStorage.getItem('nexshop_saved_catalog');
+            
+            if (savedData) {
+                productsArray = JSON.parse(savedData);
+            } else {
+                // Baseline template datasets used only on the absolute first boot cycle sequence
+                const stockTemplates = [
+                    { title: "Cyberpunk Mechanical Keyboard", price: "124.99", tag: "Tech" },
+                    { title: "Minimalist Leather Backpack", price: "89.50", tag: "Style" },
+                    { title: "Smart Ergonomic Task Chair", price: "299.00", tag: "Office" },
+                    { title: "Single-Origin Coffee Beans", price: "19.95", tag: "Food" }
+                ];
 
-        for (let i = 0; i < 8; i++) {
-            const currentItem = defaultStockData[i % defaultStockData.length];
-            grid.appendChild(buildCardElement(
-                currentItem.title,
-                currentItem.price,
-                currentItem.tag,
-                "",
-                "https://www.google.com"
-            ));
+                for (let i = 0; i < 8; i++) {
+                    const baseItem = stockTemplates[i % stockTemplates.length];
+                    const heightSet = [280, 340, 400, 460][i % 4];
+                    
+                    productsArray.push({
+                        id: 'initial-' + i,
+                        title: baseItem.title,
+                        price: baseItem.price,
+                        tag: baseItem.tag,
+                        imageUrl: `https://picsum.photos/400/${heightSet}?random=${i}`,
+                        targetUrl: "https://www.google.com",
+                        likes: Math.floor(Math.random() * 40) + i
+                    });
+                }
+                saveCatalogToDisk();
+            }
+            renderStorefrontGrid();
         }
+
+        // Run full database setup instantly on run
+        initializePersistentStorefront();
     </script>
 </body>
 </html>
