@@ -3,92 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pinterest Clone - Masonry Grid</title>
+    <title>NexShop - Affiliate Commerce Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom styles to handle the native CSS columns for Masonry */
-        .masonry-grid {
-            column-count: 1;
-            column-gap: 16px;
-        }
-        @media (min-width: 640px) { .masonry-grid { column-count: 2; } }
-        @media (min-width: 768px) { .masonry-grid { column-count: 3; } }
-        @media (min-width: 1024px) { .masonry-grid { column-count: 4; } }
-        @media (min-width: 1280px) { .masonry-grid { column-count: 5; } }
-
-        .masonry-item {
-            break-inside: avoid;
-            margin-bottom: 16px;
-        }
+        .hybrid-grid { column-count: 1; column-gap: 20px; }
+        @media (min-width: 640px) { .hybrid-grid { column-count: 2; } }
+        @media (min-width: 1024px) { .hybrid-grid { column-count: 3; } }
+        @media (min-width: 1280px) { .hybrid-grid { column-count: 4; } }
+        .grid-item { break-inside: avoid; margin-bottom: 20px; }
     </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen overflow-hidden" id="page-body">
 
-    <nav class="flex items-center justify-between px-6 py-4 bg-white sticky top-0 z-50 shadow-sm">
-        <div class="flex items-center space-x-4 w-full">
-            <div class="bg-red-600 text-white rounded-full p-2 font-bold text-xl w-10 h-10 flex items-center justify-center cursor-pointer">P</div>
-            <button class="bg-black text-white px-4 py-2 rounded-full font-semibold hidden md:block">Home</button>
-            <button class="text-black font-semibold px-4 py-2 hover:bg-gray-100 rounded-full hidden md:block">Explore</button>
-            
-            <div class="flex-grow">
-                <input type="text" placeholder="Search for ideas..." class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition">
-            </div>
+    <div id="auth-overlay" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-[100] flex items-center justify-center p-4 transition-all duration-700">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-8 rounded-2xl shadow-2xl relative text-center">
+            <div class="font-black text-3xl text-white mb-6">Nex<span class="text-blue-500">Shop</span></div>
+            <button id="bypass-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg">
+                Unlock Hub &rarr;
+            </button>
         </div>
-    </nav>
+    </div>
 
-    <main class="max-w-[1400px] mx-auto px-4 py-6">
-        <div class="masonry-grid">
+    <div id="app-content" class="filter blur-md pointer-events-none transition-all duration-700 h-screen overflow-y-auto">
+        
+        <nav class="flex items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+            <div class="font-black text-2xl tracking-tight text-white">Nex<span class="text-blue-500">Shop</span></div>
+            <div class="flex items-center space-x-6">
+                <div class="relative flex items-center space-x-2 bg-slate-950 border border-slate-800 px-4 py-2 rounded-full">
+                    <span class="text-xs font-bold text-slate-300">Cart</span>
+                    <div id="cart-counter" class="bg-blue-600 text-white font-black text-xs rounded-full w-5 h-5 flex items-center justify-center">0</div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-[1400px] mx-auto px-6 py-8">
+            <div class="hybrid-grid" id="item-container"></div>
+        </main>
+    </div>
+
+    <script>
+        const bypassBtn = document.getElementById('bypass-btn');
+        const authOverlay = document.getElementById('auth-overlay');
+        const appContent = document.getElementById('app-content');
+        const pageBody = document.getElementById('page-body');
+        const grid = document.getElementById('item-container');
+        const cartCounter = document.getElementById('cart-counter');
+
+        let totalCartCount = 0;
+        let objectIndex = 1;
+
+        bypassBtn.addEventListener('click', function() {
+            appContent.classList.remove('blur-md', 'pointer-events-none');
+            authOverlay.classList.add('opacity-0', 'pointer-events-none');
+            pageBody.classList.remove('overflow-hidden');
+        });
+
+        // CUSTOM DATASET: Edit the "targetUrl" fields below to any web link you want!
+        const itemsDataset = [
+            { 
+                title: "Premium Mechanical Keyboard", 
+                price: "124.99", 
+                rating: "4.8", 
+                tags: "Tech", 
+                targetUrl: "https://www.amazon.com" // <-- Put your target link here
+            },
+            { 
+                title: "Minimalist Leather Backpack", 
+                price: "89.50", 
+                rating: "4.6", 
+                tags: "Style", 
+                targetUrl: "https://www.shopify.com" // <-- Put your target link here
+            },
+            { 
+                title: "Ergonomic Desk Task Chair", 
+                price: "299.00", 
+                rating: "4.9", 
+                tags: "Office", 
+                targetUrl: "https://www.ebay.com" // <-- Put your target link here
+            },
+            { 
+                title: "Single-Origin Craft Coffee Beans", 
+                price: "19.95", 
+                rating: "4.7", 
+                tags: "Food", 
+                targetUrl: "https://www.starbucks.com" // <-- Put your target link here
+            }
+        ];
+
+        function createHybridCard() {
+            const card = document.createElement('div');
+            card.className = 'grid-item bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl flex flex-col transition duration-200 hover:border-slate-700';
             
-            <div class="masonry-item group relative cursor-pointer overflow-hidden rounded-2xl">
-                <img src="https://picsum.photos/400/300?random=1" alt="Pin" class="w-full object-cover rounded-2xl group-hover:brightness-75 transition duration-300">
-                <div class="absolute inset-0 p-4 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 text-white">
-                    <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-semibold self-end">Save</button>
-                    <p class="font-medium truncate">Cozy Workspace Setup</p>
+            const data = itemsDataset[Math.floor(Math.random() * itemsDataset.length)];
+            const height = [280, 340, 400, 460][Math.floor(Math.random() * 4)];
+            let itemLikes = Math.floor(Math.random() * 100) + 5;
+
+            card.innerHTML = `
+                <div class="product-link-trigger relative overflow-hidden group cursor-pointer">
+                    <img src="https://picsum.photos/400/${height}?random=${objectIndex}" class="w-full object-cover transition duration-300 group-hover:scale-102">
+                    <span class="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md text-[10px] text-slate-400 font-bold px-2.5 py-1 rounded-full uppercase border border-slate-800">${data.tags}</span>
+                    
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-200 flex items-center justify-center">
+                        <span class="bg-blue-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-lg">Buy on Store &nearr;</span>
+                    </div>
                 </div>
-            </div>
 
-            <div class="masonry-item group relative cursor-pointer overflow-hidden rounded-2xl">
-                <img src="https://picsum.photos/400/600?random=2" alt="Pin" class="w-full object-cover rounded-2xl group-hover:brightness-75 transition duration-300">
-                <div class="absolute inset-0 p-4 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 text-white">
-                    <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-semibold self-end">Save</button>
-                    <p class="font-medium truncate">Minimalist Architecture</p>
+                <div class="p-4 border-b border-slate-800/60 bg-slate-900/40">
+                    <h3 class="product-link-trigger font-bold text-white text-base tracking-tight leading-snug hover:text-blue-400 cursor-pointer transition">${data.title}</h3>
+                    <div class="flex items-center space-x-2 mt-1.5 text-xs text-amber-500 font-semibold">
+                        <span>★ ${data.rating}</span>
+                    </div>
+                    <div class="flex items-center justify-between mt-4">
+                        <div class="text-xl font-black text-white">$${data.price}</div>
+                        <button class="add-to-cart-btn bg-blue-600 hover:bg-blue-500 text-white text-xs font-black px-3.5 py-2 rounded-xl transition">
+                            Add to Cart
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div class="masonry-item group relative cursor-pointer overflow-hidden rounded-2xl">
-                <img src="https://picsum.photos/400/450?random=3" alt="Pin" class="w-full object-cover rounded-2xl group-hover:brightness-75 transition duration-300">
-                <div class="absolute inset-0 p-4 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 text-white">
-                    <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-semibold self-end">Save</button>
-                    <p class="font-medium truncate">Healthy Meal Prep</p>
+                <div class="p-4 bg-slate-900/90 flex flex-col space-y-3">
+                    <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800/40 pb-2.5">
+                        <button class="like-btn flex items-center space-x-1.5 font-bold hover:text-blue-400 transition">
+                            <span>Like</span>
+                        </button>
+                        <span class="font-medium text-slate-500"><span class="like-count text-slate-300 font-bold">${itemLikes}</span> likes</span>
+                    </div>
+                    <div class="comments-box space-y-1.5 text-xs">
+                        <div class="text-slate-400"><strong class="text-slate-300 font-semibold">Chris P.</strong> Highly recommend.</div>
+                    </div>
+                    <input type="text" placeholder="Write a comment..." class="comment-input w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs outline-none text-slate-200">
                 </div>
-            </div>
+            `;
 
-            <div class="masonry-item group relative cursor-pointer overflow-hidden rounded-2xl">
-                <img src="https://picsum.photos/400/550?random=4" alt="Pin" class="w-full object-cover rounded-2xl group-hover:brightness-75 transition duration-300">
-                <div class="absolute inset-0 p-4 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 text-white">
-                    <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-semibold self-end">Save</button>
-                    <p class="font-medium truncate">Moody Travel Photography</p>
-                </div>
-            </div>
+            // EXTERNAL LINK ENGINE: Listens specifically to elements with the 'product-link-trigger' class
+            const triggers = card.querySelectorAll('.product-link-trigger');
+            triggers.forEach(trigger => {
+                trigger.addEventListener('click', (e) => {
+                    // Open the product's custom URL in a brand new tab
+                    window.open(data.targetUrl, '_blank');
+                });
+            });
 
-            <div class="masonry-item group relative cursor-pointer overflow-hidden rounded-2xl">
-                <img src="https://picsum.photos/400/250?random=5" alt="Pin" class="w-full object-cover rounded-2xl group-hover:brightness-75 transition duration-300">
-                <div class="absolute inset-0 p-4 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 text-white">
-                    <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-semibold self-end">Save</button>
-                    <p class="font-medium truncate">UI Design Inspiration</p>
-                </div>
-            </div>
+            // Local Shopping Cart logic
+            const cartBtn = card.querySelector('.add-to-cart-btn');
+            cartBtn.addEventListener('click', (e) => {
+                totalCartCount++;
+                cartCounter.innerText = totalCartCount;
+            });
 
-            <div class="masonry-item group relative cursor-pointer overflow-hidden rounded-2xl">
-                <img src="https://picsum.photos/400/400?random=6" alt="Pin" class="w-full object-cover rounded-2xl group-hover:brightness-75 transition duration-300">
-                <div class="absolute inset-0 p-4 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 text-white">
-                    <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-semibold self-end">Save</button>
-                    <p class="font-medium truncate">Lo-Fi Aesthetic</p>
-                </div>
-            </div>
+            // Local social toggle engine
+            const likeBtn = card.querySelector('.like-btn');
+            const likeCountDisplay = card.querySelector('.like-count');
+            let isLiked = false;
+            likeBtn.addEventListener('click', () => {
+                if(!isLiked) { itemLikes++; likeBtn.classList.add('text-blue-500'); isLiked = true; } 
+                else { itemLikes--; likeBtn.classList.remove('text-blue-500'); isLiked = false; }
+                likeCountDisplay.innerText = itemLikes;
+            });
 
-        </div>
-    </main>
+            // Local comment injection engine
+            const commentInput = card.querySelector('.comment-input');
+            const commentsBox = card.querySelector('.comments-box');
+            commentInput.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter' && commentInput.value.trim() !== "") {
+                    const div = document.createElement('div');
+                    div.className = 'text-slate-400';
+                    div.innerHTML = `<strong class="text-slate-300 font-semibold">You</strong> ${commentInput.value.trim()}`;
+                    commentsBox.appendChild(div);
+                    commentInput.value = "";
+                }
+            });
 
+            objectIndex++;
+            return card;
+        }
+
+        function buildInterface() {
+            for (let i = 0; i < 12; i++) { grid.appendChild(createHybridCard()); }
+        }
+
+        appContent.addEventListener('scroll', () => {
+            if (appContent.scrollTop + appContent.clientHeight >= appContent.scrollHeight - 400) {
+                for (let i = 0; i < 4; i++) { grid.appendChild(createHybridCard()); }
+            }
+        });
+
+        buildInterface();
+    </script>
 </body>
 </html>
