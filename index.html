@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinterest Clone - Masonry Grid</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles to handle the native CSS columns for Masonry */
+        .masonry-grid {
+            column-count: 1;
+            column-gap: 16px;
+        }
+        @media (min-width: 640px) { .masonry-grid { column-count: 2; } }
+        @media (min-width: 768px) { .masonry-grid { column-count: 3; } }
+        @media (min-width: 1024px) { .masonry-grid { column-count: 4; } }
+        @media (min-width: 1280px) { .masonry-grid { column-count: 5; } }
+
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+    <nav class="flex items-center justify-between px-6 py-4 bg-white sticky top-0 z-50 shadow-sm">
+        <div class="flex items-center space-x-4 w-full">
+            <div class="bg-red-600 text-white rounded-full p-2 font-bold text-xl w-10 h-10 flex items-center justify-center cursor-pointer">P</div>
+            <button class="bg-black text-white px-4 py-2 rounded-full font-semibold hidden md:block">Home</button>
+            <button class="text-black font-semibold px-4 py-2 hover:bg-gray-100 rounded-full hidden md:block">Explore</button>
+            
+            <div class="flex-grow">
+                <input type="text" placeholder="Search for ideas..." class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition">
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-[1400px] mx-auto px-4 py-6">
+        <div class="masonry-grid">
+            
+            <div class="masonry-item group relative cursor-pointer overflow-hidden rounded-2xl">
+                <img src="https://picsum.photos/400/300?random=1" alt="Pin" class="w-full object-cover rounded-2xl group-hover:brightness-75 transition duration-300">
+                <div class="absolute inset-0 p-4 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 text-white">
+                    <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-semibold self-end">Save</button>
+                    <p class="font-medium truncate">Cozy Workspace Setup</p>
+                </div>
+            </div>
+
+            <div class="masonry-item group relative cursor-pointer overflow-hidden rounded-2xl">
+                <img src="https://picsum.photos/400/600?random=2" alt="Pin" class="w-full object-cover rounded-2xl group-hover:brightness-75 transition duration-300">
+                <div class="absolute inset-0 p-4 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 text-white">
+                    <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-semibold self-end">Save</button>
+                    <p class="font-medium truncate">Minimalist Architecture</p>
+                </div>
+            </div>
+
+            <div class="masonry-item group relative cursor-pointer overflow-hidden rounded-2xl">
+                <img src="https://picsum.photos/400/450?random=3" alt="Pin" class="w-full object-cover rounded-2xl group-hover:brightness-75 transition duration-300">
+                <div class="absolute inset-0 p-4 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 text-white">
+                    <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-semibold self-end">Save</button>
+                    <p class="font-medium truncate">Healthy Meal Prep</p>
+                </div>
+            </div>
+
+            <div class="masonry-item group relative cursor-pointer overflow-hidden rounded-2xl">
+                <img src="https://picsum.photos/400/550?random=4" alt="Pin" class="w-full object-cover rounded-2xl group-hover:brightness-75 transition duration-300">
+                <div class="absolute inset-0 p-4 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 text-white">
+                    <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-semibold self-end">Save</button>
+                    <p class="font-medium truncate">Moody Travel Photography</p>
+                </div>
+            </div>
+
+            <div class="masonry-item group relative cursor-pointer overflow-hidden rounded-2xl">
+                <img src="https://picsum.photos/400/250?random=5" alt="Pin" class="w-full object-cover rounded-2xl group-hover:brightness-75 transition duration-300">
+                <div class="absolute inset-0 p-4 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 text-white">
+                    <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-semibold self-end">Save</button>
+                    <p class="font-medium truncate">UI Design Inspiration</p>
+                </div>
+            </div>
+
+            <div class="masonry-item group relative cursor-pointer overflow-hidden rounded-2xl">
+                <img src="https://picsum.photos/400/400?random=6" alt="Pin" class="w-full object-cover rounded-2xl group-hover:brightness-75 transition duration-300">
+                <div class="absolute inset-0 p-4 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 text-white">
+                    <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-semibold self-end">Save</button>
+                    <p class="font-medium truncate">Lo-Fi Aesthetic</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>
