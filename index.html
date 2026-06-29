@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NexShop - Affiliate Commerce Engine</title>
+    <title>NexShop - Admin Inventory Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .hybrid-grid { column-count: 1; column-gap: 20px; }
@@ -15,32 +15,81 @@
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen overflow-hidden" id="page-body">
 
+    <!-- PLATFORM SECURITY LOCK OVERLAY -->
     <div id="auth-overlay" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-[100] flex items-center justify-center p-4 transition-all duration-700">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-8 rounded-2xl shadow-2xl relative text-center">
-            <div class="font-black text-3xl text-white mb-6">Nex<span class="text-blue-500">Shop</span></div>
+            <div class="font-black text-3xl text-white mb-6">Nex<span class="text-blue-500">Shop</span> Admin</div>
             <button id="bypass-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg">
-                Unlock Hub &rarr;
+                Unlock Catalog Console &rarr;
             </button>
         </div>
     </div>
 
+    <!-- GLOBAL APPLICATION SPACE -->
     <div id="app-content" class="filter blur-md pointer-events-none transition-all duration-700 h-screen overflow-y-auto">
         
+        <!-- Interactive Sticky Header -->
         <nav class="flex items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
             <div class="font-black text-2xl tracking-tight text-white">Nex<span class="text-blue-500">Shop</span></div>
-            <div class="flex items-center space-x-6">
+            <div class="flex items-center space-x-4">
+                <button id="open-panel-btn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-2.5 rounded-full transition shadow-lg flex items-center space-x-1">
+                    <span>+ Add New Product</span>
+                </button>
                 <div class="relative flex items-center space-x-2 bg-slate-950 border border-slate-800 px-4 py-2 rounded-full">
-                    <span class="text-xs font-bold text-slate-300">Cart</span>
+                    <span class="text-xs font-bold text-slate-400">Cart</span>
                     <div id="cart-counter" class="bg-blue-600 text-white font-black text-xs rounded-full w-5 h-5 flex items-center justify-center">0</div>
                 </div>
             </div>
         </nav>
 
+        <!-- MERCHANT PRODUCT CREATION MODAL CONTAINER -->
+        <div id="merchant-panel" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4">
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-white flex items-center space-x-2">
+                        <span>✨ Create New Inventory Item</span>
+                    </h2>
+                    <button id="close-panel-btn" class="text-slate-500 hover:text-slate-300 font-bold text-sm">Cancel</button>
+                </div>
+
+                <!-- Input Entry Control Elements -->
+                <form id="injector-form" class="space-y-4" onsubmit="return false;">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Product Title</label>
+                        <input type="text" id="prod-title" required placeholder="e.g., Designer Leather Sneakers" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-blue-500 transition">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Price ($)</label>
+                            <input type="number" step="0.01" id="prod-price" required placeholder="149.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Category Tag</label>
+                            <input type="text" id="prod-tag" required placeholder="e.g., Fashion" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-blue-500 transition">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Product Image Link</label>
+                        <input type="url" id="prod-img" placeholder="Paste image link, or leave blank for random stock placeholder..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-blue-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-blue-400 font-extrabold mb-1">Target Action Redirect Link</label>
+                        <input type="url" id="prod-url" required placeholder="https://amazon.com/example-product" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs outline-none transition text-blue-300">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition text-xs shadow-lg mt-2">
+                        Inject To Storefront Feed &rarr;
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MASONRY PRESENTATION HUB -->
         <main class="max-w-[1400px] mx-auto px-6 py-8">
             <div class="hybrid-grid" id="item-container"></div>
         </main>
     </div>
 
+    <!-- PLATFORM ARCHITECTURE CONTROLLER MODULES -->
     <script>
         const bypassBtn = document.getElementById('bypass-btn');
         const authOverlay = document.getElementById('auth-overlay');
@@ -49,109 +98,105 @@
         const grid = document.getElementById('item-container');
         const cartCounter = document.getElementById('cart-counter');
 
+        const merchantPanel = document.getElementById('merchant-panel');
+        const openPanelBtn = document.getElementById('open-panel-btn');
+        const closePanelBtn = document.getElementById('close-panel-btn');
+        const injectorForm = document.getElementById('injector-form');
+
         let totalCartCount = 0;
         let objectIndex = 1;
 
+        // Sign In Transition Locks
         bypassBtn.addEventListener('click', function() {
             appContent.classList.remove('blur-md', 'pointer-events-none');
             authOverlay.classList.add('opacity-0', 'pointer-events-none');
             pageBody.classList.remove('overflow-hidden');
         });
 
-        // CUSTOM DATASET: Edit the "targetUrl" fields below to any web link you want!
-        const itemsDataset = [
-            { 
-                title: "Premium Mechanical Keyboard", 
-                price: "124.99", 
-                rating: "4.8", 
-                tags: "Tech", 
-                targetUrl: "https://www.amazon.com" // <-- Put your target link here
-            },
-            { 
-                title: "Minimalist Leather Backpack", 
-                price: "89.50", 
-                rating: "4.6", 
-                tags: "Style", 
-                targetUrl: "https://www.shopify.com" // <-- Put your target link here
-            },
-            { 
-                title: "Ergonomic Desk Task Chair", 
-                price: "299.00", 
-                rating: "4.9", 
-                tags: "Office", 
-                targetUrl: "https://www.ebay.com" // <-- Put your target link here
-            },
-            { 
-                title: "Single-Origin Craft Coffee Beans", 
-                price: "19.95", 
-                rating: "4.7", 
-                tags: "Food", 
-                targetUrl: "https://www.starbucks.com" // <-- Put your target link here
-            }
-        ];
+        // Toggle Control Panels
+        openPanelBtn.addEventListener('click', () => merchantPanel.classList.remove('hidden'));
+        closePanelBtn.addEventListener('click', () => merchantPanel.classList.add('hidden'));
 
-        function createHybridCard() {
+        // COMPONENT DESIGN STRUCTURING CORE ENGINE
+        function buildCardElement(title, price, tag, imageUrl, targetUrl) {
             const card = document.createElement('div');
-            card.className = 'grid-item bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl flex flex-col transition duration-200 hover:border-slate-700';
+            card.className = 'grid-item bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl flex flex-col transition duration-200 hover:border-slate-700 relative group';
             
-            const data = itemsDataset[Math.floor(Math.random() * itemsDataset.length)];
-            const height = [280, 340, 400, 460][Math.floor(Math.random() * 4)];
-            let itemLikes = Math.floor(Math.random() * 100) + 5;
+            const imgPath = imageUrl ? imageUrl : `https://picsum.photos/400/${[280, 340, 400, 460][objectIndex % 4]}?random=${objectIndex}`;
+            let itemLikes = Math.floor(Math.random() * 50) + 2;
 
             card.innerHTML = `
-                <div class="product-link-trigger relative overflow-hidden group cursor-pointer">
-                    <img src="https://picsum.photos/400/${height}?random=${objectIndex}" class="w-full object-cover transition duration-300 group-hover:scale-102">
-                    <span class="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md text-[10px] text-slate-400 font-bold px-2.5 py-1 rounded-full uppercase border border-slate-800">${data.tags}</span>
-                    
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-200 flex items-center justify-center">
-                        <span class="bg-blue-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-lg">Buy on Store &nearr;</span>
+                <!-- ADMIN DELETION PIPELINE TRIGGER -->
+                <button class="delete-product-btn absolute top-3 right-3 z-30 bg-red-600/90 hover:bg-red-500 text-white p-2 rounded-xl transition duration-150 opacity-0 group-hover:opacity-100 shadow-md transform hover:scale-105" title="Remove Product">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+
+                <!-- Pinterest Image Presentation Component -->
+                <div class="product-link-trigger relative overflow-hidden cursor-pointer">
+                    <img src="${imgPath}" class="w-full object-cover max-h-[500px]">
+                    <span class="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md text-[10px] text-slate-400 font-bold px-2.5 py-1 rounded-full uppercase border border-slate-800">${tag}</span>
+                    <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition duration-200 flex items-center justify-center">
+                        <span class="bg-blue-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-lg">Go to Store &nearr;</span>
                     </div>
                 </div>
 
+                <!-- Amazon Billing Segment -->
                 <div class="p-4 border-b border-slate-800/60 bg-slate-900/40">
-                    <h3 class="product-link-trigger font-bold text-white text-base tracking-tight leading-snug hover:text-blue-400 cursor-pointer transition">${data.title}</h3>
-                    <div class="flex items-center space-x-2 mt-1.5 text-xs text-amber-500 font-semibold">
-                        <span>★ ${data.rating}</span>
-                    </div>
+                    <h3 class="product-link-trigger font-bold text-white text-base hover:text-blue-400 cursor-pointer transition leading-snug">${title}</h3>
                     <div class="flex items-center justify-between mt-4">
-                        <div class="text-xl font-black text-white">$${data.price}</div>
-                        <button class="add-to-cart-btn bg-blue-600 hover:bg-blue-500 text-white text-xs font-black px-3.5 py-2 rounded-xl transition">
+                        <div class="text-xl font-black text-white">$${parseFloat(price).toFixed(2)}</div>
+                        <button class="add-to-cart-btn bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-black px-3.5 py-2 rounded-xl transition">
                             Add to Cart
                         </button>
                     </div>
                 </div>
 
+                <!-- Facebook Conversational Framework Layer -->
                 <div class="p-4 bg-slate-900/90 flex flex-col space-y-3">
                     <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800/40 pb-2.5">
-                        <button class="like-btn flex items-center space-x-1.5 font-bold hover:text-blue-400 transition">
-                            <span>Like</span>
-                        </button>
-                        <span class="font-medium text-slate-500"><span class="like-count text-slate-300 font-bold">${itemLikes}</span> likes</span>
+                        <button class="like-btn font-bold hover:text-blue-400 transition">Like</button>
+                        <span class="font-medium text-slate-500"><span class="like-count text-slate-300 font-bold">${itemLikes}</span> clicks</span>
                     </div>
-                    <div class="comments-box space-y-1.5 text-xs">
-                        <div class="text-slate-400"><strong class="text-slate-300 font-semibold">Chris P.</strong> Highly recommend.</div>
+                    <div class="comments-box space-y-1.5 text-xs max-h-[80px] overflow-y-auto">
+                        <div class="text-slate-500"><strong class="text-slate-400">Inventory Status:</strong> Active Node</div>
                     </div>
-                    <input type="text" placeholder="Write a comment..." class="comment-input w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs outline-none text-slate-200">
+                    <input type="text" placeholder="Write a comment..." class="comment-input w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 outline-none">
                 </div>
             `;
 
-            // EXTERNAL LINK ENGINE: Listens specifically to elements with the 'product-link-trigger' class
-            const triggers = card.querySelectorAll('.product-link-trigger');
-            triggers.forEach(trigger => {
-                trigger.addEventListener('click', (e) => {
-                    // Open the product's custom URL in a brand new tab
-                    window.open(data.targetUrl, '_blank');
+            // WIRE INTERNAL DELETION ENGINE MODULATOR
+            const deleteBtn = card.querySelector('.delete-product-btn');
+            deleteBtn.addEventListener('click', (e) => {
+                // Prevent routing events from misfiring during button interaction actions
+                e.stopPropagation(); 
+                
+                // Add a swift exit collapse transition animation block
+                card.style.transform = 'scale(0.9)';
+                card.style.opacity = '0';
+                card.style.transition = 'all 0.2s ease';
+                
+                setTimeout(() => {
+                    card.remove();
+                }, 200);
+            });
+
+            // Target redirect link handlers
+            const redirectTriggers = card.querySelectorAll('.product-link-trigger');
+            redirectTriggers.forEach(trigger => {
+                trigger.addEventListener('click', () => {
+                    window.open(targetUrl, '_blank');
                 });
             });
 
-            // Local Shopping Cart logic
-            const cartBtn = card.querySelector('.add-to-cart-btn');
-            cartBtn.addEventListener('click', (e) => {
+            // Shopping cart trigger logic
+            card.querySelector('.add-to-cart-btn').addEventListener('click', () => {
                 totalCartCount++;
                 cartCounter.innerText = totalCartCount;
             });
 
-            // Local social toggle engine
+            // Facebook like toggle engine
             const likeBtn = card.querySelector('.like-btn');
             const likeCountDisplay = card.querySelector('.like-count');
             let isLiked = false;
@@ -161,14 +206,14 @@
                 likeCountDisplay.innerText = itemLikes;
             });
 
-            // Local comment injection engine
+            // Live comment string parsing injector
             const commentInput = card.querySelector('.comment-input');
             const commentsBox = card.querySelector('.comments-box');
             commentInput.addEventListener('keydown', (e) => {
                 if(e.key === 'Enter' && commentInput.value.trim() !== "") {
                     const div = document.createElement('div');
                     div.className = 'text-slate-400';
-                    div.innerHTML = `<strong class="text-slate-300 font-semibold">You</strong> ${commentInput.value.trim()}`;
+                    div.innerHTML = `<strong class="text-slate-300">You</strong> ${commentInput.value.trim()}`;
                     commentsBox.appendChild(div);
                     commentInput.value = "";
                 }
@@ -178,17 +223,41 @@
             return card;
         }
 
-        function buildInterface() {
-            for (let i = 0; i < 12; i++) { grid.appendChild(createHybridCard()); }
-        }
+        // CAPTURE NEW CONTROL SUBMISSIONS VIA DIALOG ACTION LOOPS
+        injectorForm.addEventListener('submit', function(e) {
+            e.preventDefault();
 
-        appContent.addEventListener('scroll', () => {
-            if (appContent.scrollTop + appContent.clientHeight >= appContent.scrollHeight - 400) {
-                for (let i = 0; i < 4; i++) { grid.appendChild(createHybridCard()); }
-            }
+            const title = document.getElementById('prod-title').value;
+            const price = document.getElementById('prod-price').value;
+            const tag = document.getElementById('prod-tag').value;
+            const img = document.getElementById('prod-img').value;
+            const url = document.getElementById('prod-url').value;
+
+            const newCard = buildCardElement(title, price, tag, img, url);
+            grid.insertBefore(newCard, grid.firstChild);
+
+            injectorForm.reset();
+            merchantPanel.classList.add('hidden');
         });
 
-        buildInterface();
+        // Initialize Storefront catalog with editable baseline stock array data templates
+        const defaultStockData = [
+            { title: "Cyberpunk Mechanical Keyboard", price: "124.99", tag: "Tech" },
+            { title: "Minimalist Leather Backpack", price: "89.50", tag: "Style" },
+            { title: "Smart Ergonomic Task Chair", price: "299.00", tag: "Office" },
+            { title: "Single-Origin Coffee Beans", price: "19.95", tag: "Food" }
+        ];
+
+        for (let i = 0; i < 8; i++) {
+            const currentItem = defaultStockData[i % defaultStockData.length];
+            grid.appendChild(buildCardElement(
+                currentItem.title,
+                currentItem.price,
+                currentItem.tag,
+                "",
+                "https://www.google.com"
+            ));
+        }
     </script>
 </body>
 </html>
